@@ -9,7 +9,6 @@ class SiteMapper {
         ignoreIndexFiles,
         ignoredPaths,
         pagesDirectory,
-        sitemapPath,
         targetDirectory,
         nextConfigPath,
         ignoredExtensions,
@@ -22,7 +21,6 @@ class SiteMapper {
         this.ignoreIndexFiles = ignoreIndexFiles || false;
         this.ignoredExtensions = ignoredExtensions || [];
         this.pagesdirectory = pagesDirectory;
-        this.sitemapPath = sitemapPath;
         this.targetDirectory = targetDirectory;
         this.nextConfigPath = nextConfigPath;
         this.sitemap = `<?xml version="1.0" encoding="UTF-8"?>
@@ -38,23 +36,11 @@ class SiteMapper {
         }
     }
 
-    preLaunch() {
-        fs.writeFileSync(
-            path.resolve(this.targetDirectory, "./sitemap.xml"),
-            this.sitemap,
-            {
-                flag: "w"
-            }
-        );
-    }
-
     finish() {
+        this.sitemap += "\n</urlset>";
         fs.writeFileSync(
             path.resolve(this.targetDirectory, "./sitemap.xml"),
-            "</urlset>",
-            {
-                flag: "as"
-            }
+            this.sitemap
         );
     }
 
@@ -152,18 +138,17 @@ class SiteMapper {
                 changefreq = pageConfig.changefreq ? `<changefreq>${pageConfig.changefreq}</changefreq>` : '';
             }
 
-            let xmlObject = `<url><loc>${this.baseUrl}${pagePath}</loc>
-                ${alternates}
-                ${priority}
-                ${changefreq}
-                <lastmod>${date}</lastmod>
-                </url>`;
+            let xmlObject = `
+    <url>
+        <loc>${this.baseUrl}${pagePath}</loc>
+        ${alternates}
+        ${priority}
+        ${changefreq}
+        <lastmod>${date}</lastmod>
+    </url>
+            `;
 
-            fs.writeFileSync(
-                path.resolve(this.targetDirectory, "./sitemap.xml"),
-                xmlObject,
-                {flag: "as"}
-            );
+            this.sitemap += xmlObject;
         }
     }
 }
